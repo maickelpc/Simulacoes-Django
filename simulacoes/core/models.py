@@ -14,17 +14,17 @@ class Acelerometro(models.Model):
 
 
     def __str__(self):
-        return self.codigo + ' - ' + self.descricao;
+        return self.codigo + ' - ' + self.descricao
 
     class Meta:
         verbose_name = 'Acelerômetro'
         verbose_name_plural = 'Acelerômetros'
 
 class Arquivo(models.Model):
+
     def file_directory_path(instance, filename):
         # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
         return 'arquivos/{0}/{1}'.format(instance.acelerometro.id, datetime.now().strftime("%Y_%m_%d_%H_%M_%S")+'.'+filename.__str__()[-3:])
-
 
     id = models.AutoField(primary_key=True)
     codigo = models.CharField(max_length=100,unique=True,verbose_name='Código')
@@ -35,13 +35,8 @@ class Arquivo(models.Model):
     frequencia = models.IntegerField(verbose_name='Frequência em Hz')
     dataUpload = models.DateTimeField(auto_now = True, verbose_name='Data de Upload')
 
-
-
     def __str(self):
         return self.codigo
-
-
-
 
     class Meta:
         verbose_name = "Arquivo"

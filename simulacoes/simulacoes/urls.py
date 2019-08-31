@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from core.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('arquivos/', ArquivosList.listar_arquivos, name="listaArquivos"),
+    path('<int:arquivo_id>/plotBruto/',FDD.plotar_dados_brutos, name="plotBruto"),
 ]
