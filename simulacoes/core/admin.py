@@ -16,6 +16,7 @@ class EstatisticasTabular(admin.TabularInline):
 class AcelerometroAdmin(admin.ModelAdmin):
     search_fields = ['codigo','descricao','localizacao']
     list_display = ['id','codigo','descricao','localizacao','eixoX','eixoY','eixoZ']
+    list_display_links = ['id','codigo','descricao','localizacao']
     list_editable = ['eixoX','eixoY','eixoZ']
     ordering = ['codigo']
 
