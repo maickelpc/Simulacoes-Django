@@ -11,3 +11,9 @@ class ArquivoForm(ModelForm):
     class Meta:
         model = Arquivo
         fields = ('__all__')
+
+class GraficoForm(forms.Form):
+    pk_arquivo = forms.IntegerField(widget=forms.HiddenInput())
+    canais = forms.IntegerField(label="Number of channels",)
+    analise_canais = forms.IntegerField(label="Channels analysis")
+    fourier_size = forms.IntegerField(label="Fourier transform size")

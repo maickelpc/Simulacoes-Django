@@ -11,6 +11,7 @@ from matplotlib import pylab
 from pylab import *
 import io
 from .models import *
+from .forms import *
 
 class Basic(TemplateView):
 
@@ -55,14 +56,31 @@ class Arquivos(TemplateView):
 
 class Grafico(TemplateView):
     def montar_grafico(request,pk):
-        arquivo = Arquivo.objects.get(pk=pk)
-        fourier_transform_size = 2048
-        canais = arquivo.canais
-        analise_canais = 50
-        documento = arquivo.documento
-        dados_grafico = {'fourier_size':fourier_transform_size,'canais':canais,'analise_canais':analise_canais,'arquivo':documento,'id':pk}
-        return render(request,"base.html",dados_grafico)
-        
+        formulario = montar_formulario(pk)
+        return render(request,"base.html",{'form':formulario,'id':pk})
+
+    def validador(request):
+        if request.method == 'POST':
+            formulario = GraficoForm(request.POST)
+            if formulario.is_valid():
+
+                return render(request,"base.html",{'form':formulario})
+        else:
+            formulario = GraficoForm
+            return render(request,"base.html",{'form':formulario})
+
+    def montar_formulario(pk):
+        arquivo = Arquivo.objects.get(pk=pk)    
+        documento = arquivo.documento 
+        formulario = GraficoForm
+        formulario.canais = arquivo.canais
+        formulario.analise_canais = 50
+        formulario.fourier_size = 2048
+        return formulario
+
+
+    def plotar_grafico(request):
+        return NullFormatter
 
 class FDD():
     def power_spectral_density(degrees, fourier_transform_size, stream_file, delta):
