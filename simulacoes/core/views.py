@@ -7,38 +7,64 @@ import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib import pylab
+from pylab import *
+import io
 from .models import *
 
-class ArquivosList(TemplateView):
-    model = Arquivo
-    context_object_name = "Arquivos"
+class Basic(TemplateView):
+
+    def home(request):
+        return render(request,"principal.html")
+
+    def teste(request):
+        return render(request,'teste.html')
+
+class Arquivos(TemplateView):
     arquivos = Arquivo.objects.all()
 
     def listar_arquivos(request):
         arquivos = Arquivo.objects.all()
-        return render(request,"arquivos_list.html",{'object_list':arquivos})
+        return render(request,"base.html",{'arq':arquivos})
 
-class FDD(TemplateView):
-    def plotar_dados_brutos(request,arquivo_id):
-        dominio = 5
-        fourierSize = 2048
-        graus = 50
-        arquivo = get_object_or404(Arquivo, pk=arquivo_id)
-        frequency, eigen_values = FDD.system_frequency(dominio, fourierSize, arquivo, graus )
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.cla()
-        ax.grid(True)
-        for i in range(0, dominio):
-             ax.semilogy(frequency[i, i, :], eigen_values[:, i])  # 5 points tolerance
-        ax.legend(loc='center', bbox_to_anchor=(0.8, 0.5))
-        plt.show()
-        # armazenar imagem do plot em um buffer
-        #buf = io.BytesIO()
-        #canvas = FigureCanvasAgg(fig)
-        #canvas.print_png(buf) 
-        fig.clear()
+    def plot_dados(request):
+        arquivo = Arquivo.objects.get(pk=1)
+        print(arquivo)
+        print(type(arquivo))
+        return render(request,"arquivos_list.html",{'arq':arquivo.documento})
 
+    def plotar_dados_brutos(request,pk):
+        arquivo = Arquivo.objects.get(pk = pk)
+        nome = arquivo.codigo
+        arquivo = arquivo.documento.readlines()
+        plot_list = []
+        item = []
+        for linha in arquivo:
+            linha = str(linha)
+            linha = linha.replace("'","")
+            linha = linha.replace("b","")
+            linha = linha.replace("\n","")
+            linha = linha.replace("\r","")
+            valores = linha.split(',')
+            for valor in valores:
+                item.append(valor)
+            aux = item.copy()
+            plot_list.append(aux)
+            item.clear()
+        return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
+
+class Grafico(TemplateView):
+    def montar_grafico(request,pk):
+        arquivo = Arquivo.objects.get(pk=pk)
+        fourier_transform_size = 2048
+        canais = arquivo.canais
+        analise_canais = 50
+        documento = arquivo.documento
+        dados_grafico = {'fourier_size':fourier_transform_size,'canais':canais,'analise_canais':analise_canais,'arquivo':documento,'id':pk}
+        return render(request,"base.html",dados_grafico)
+        
+
+class FDD():
     def power_spectral_density(degrees, fourier_transform_size, stream_file, delta):
         print(" power_spectral_density operante...")
         cross_spectral_density = np.zeros((degrees, degrees, int((fourier_transform_size / 2) + 1)),
@@ -84,10 +110,8 @@ class FDD(TemplateView):
 
     def system_frequency(degrees, fourier_transform_size, stream_file, delta):
         print("system_frequency operante")
-        cross_spectral_density, frequency = power_spectral_density(degrees, fourier_transform_size, stream_file,
-                                                                   delta)  # call power spectral density power function flame
-        eigen_values, eigen_vectors = spectral_value_decomposition(degrees, fourier_transform_size,
-                                                                   cross_spectral_density)  # call spectral value decomposition function
+        cross_spectral_density, frequency = FDD.power_spectral_density(degrees, fourier_transform_size, stream_file,delta)  # call power spectral density power function flame
+        eigen_values, eigen_vectors = FDD.spectral_value_decomposition(degrees, fourier_transform_size, cross_spectral_density)  # call spectral value decomposition function
         return frequency, eigen_values
 
     def frequency_position(frequency_peaks, degrees, fourier_transform_size, stream_file, delta):

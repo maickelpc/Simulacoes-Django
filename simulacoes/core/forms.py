@@ -11,5 +11,3 @@ class ArquivoForm(ModelForm):
     class Meta:
         model = Arquivo
         fields = ('__all__')
-
-

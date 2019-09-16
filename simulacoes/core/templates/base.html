@@ -4,19 +4,19 @@
 <html>
 <body>
 <div class="container">
-    <div class="row">
-        <div class="col-md-4" > 
-        
+    <div class="row">    
 {% comment %}       LISTAGEM ARQUIVOS       {% endcomment %}
         {% if arq %}
+        <div class="col-md-4" > 
+
             <table class="table table-striped table-hover">
             <thead class="thead-dark">
                 <tr>
                   <th>Code</th>
                   <th>Date</th>
-                  <th>Document</th>
+                  <th>Archiev</th>
                   <th>Channels</th>
-                  <th class="text-sucess">Action</th>
+                  <th class="text-sucess">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,19 +26,21 @@
                   <td>{{arquivo.dataLeitura}}</td>
                   <td>{{arquivo.documento}}</td>
                   <td>{{arquivo.canais}}</td>
-                  <td><a class="btn btn-primary" href="/montarGrafico/{{arquivo.id}}/">Build Graphic </a></td>
+                  <td><a class="btn btn-primary" href="/montarGrafico/{{arquivo.id}}/">Build Graphic</a></td>
                 </tr>
             {% endfor %}
             </tbody>
             </table>
+        </div>
         {% endif %} 
 {% comment %}       PlOT BRUTO DOS DADOS          {% endcomment %}
 
         {% if plot_list %}
+        <div class="col-md-4" style="overflow:scroll; max-height: 500px;"> 
             <table class="table table-hover table-striped" style="overflow:scroll; max-height:500px;">
                 <thead class="thead-dark">
                     <tr>
-                        <th class="text-info display-4"><center>Archive {{ codigo }}<center></th>
+                        <th class="text-info display-4"><center>Archiev {{ codigo }}<center></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,25 +53,28 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
         {% endif %}
 
 {% comment %}       FORMULARIO DO GRAFICO         {% endcomment %}
         {% if fourier_size %}       
+        <div class="col-md-4" > 
+
         <form action="/plotarGrafico/" method="POST">
         {% csrf_token %}
             <div class="form-group">
                 <label>Channels</label>
                 <input name="canais" class="form-control" type="number" value="{{canais}}">
-                <label>Channel Analysis</label>
+                <label>Channels Analysis</label>
                 <input name="analise_canais" class="form-control" type="number" value="{{analise_canais}}">
                 <label>Fourier Transform Size</label>
                 <input name="fourier_size" class="form-control" type="number" value="{{fourier_size}}">   
                 <input name="id" type="hidden" value="{{id}}">             
             </div>
             <input class="btn btn-success btn-lg" type="submit" value="Submeter Dados">
-        </form>       
+        </form>  
+        </div>     
         {% endif %}
-        </div>
     </div>
 </div>
 <body>

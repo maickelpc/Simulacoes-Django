@@ -19,6 +19,10 @@ from core.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('arquivos/', ArquivosList.listar_arquivos, name="listaArquivos"),
-    path('<int:arquivo_id>/plotBruto/',FDD.plotar_dados_brutos, name="plotBruto"),
+    path('', Basic.home),
+    path('arquivos/', Arquivos.listar_arquivos, name="arquivos"),
+    path('arquivo/',Arquivos.plot_dados,name="plotDados"),
+    path('plotBruto/<int:pk>/',Arquivos.plotar_dados_brutos, name="plotBruto"),
+    path('montarGrafico/<int:pk>/', Grafico.montar_grafico,name="montarGrafico"),
+    #path('plotarGrafico/',Grafico.plotar_grafico,name="plotarGrafico"),
 ]
