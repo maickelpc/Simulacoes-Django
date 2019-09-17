@@ -55,16 +55,33 @@ class Arquivos(TemplateView):
         return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
 
 class Grafico(TemplateView):
-    def montar_grafico(request,pk):
-        formulario = montar_formulario(pk)
-        return render(request,"base.html",{'form':formulario,'id':pk})
 
-    def validador(request):
+    def montar_grafico(request,pk):
+        form = Grafico.montar_formulario(pk)
+        return render(request,"base.html",{'form':form,'id':pk})
+
+    def plotar_grafico(request):
         if request.method == 'POST':
             formulario = GraficoForm(request.POST)
-            if formulario.is_valid():
-
-                return render(request,"base.html",{'form':formulario})
+            id = request.POST['id']
+            arquivo = get_object_or_404(Arquivo, pk = id)
+            arq = genfromtxt(arquivo.documento, delimiter=",")
+            
+            frequency, eigen_values = Grafico.system_frequency( )
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.cla()
+            ax.grid(True)
+            for i in range(0, dominio):
+                ax.semilogy(frequency[i, i, :], eigen_values[:, i])  # 5 points tolerance
+            ax.legend(loc='center', bbox_to_anchor=(0.8, 0.5))
+            plt.show()
+            # armazenar imagem do plot em um buffer
+            #buf = io.BytesIO()
+            #canvas = FigureCanvasAgg(fig)
+            #canvas.print_png(buf)          
+            fig.clear()        
+            return render(request,"base.html",{'form':formulario})
         else:
             formulario = GraficoForm
             return render(request,"base.html",{'form':formulario})
@@ -73,16 +90,12 @@ class Grafico(TemplateView):
         arquivo = Arquivo.objects.get(pk=pk)    
         documento = arquivo.documento 
         formulario = GraficoForm
+        formulario.pk_arquivo = pk
         formulario.canais = arquivo.canais
         formulario.analise_canais = 50
         formulario.fourier_size = 2048
-        return formulario
-
-
-    def plotar_grafico(request):
-        return NullFormatter
-
-class FDD():
+        return formulario 
+        
     def power_spectral_density(degrees, fourier_transform_size, stream_file, delta):
         print(" power_spectral_density operante...")
         cross_spectral_density = np.zeros((degrees, degrees, int((fourier_transform_size / 2) + 1)),
@@ -128,8 +141,8 @@ class FDD():
 
     def system_frequency(degrees, fourier_transform_size, stream_file, delta):
         print("system_frequency operante")
-        cross_spectral_density, frequency = FDD.power_spectral_density(degrees, fourier_transform_size, stream_file,delta)  # call power spectral density power function flame
-        eigen_values, eigen_vectors = FDD.spectral_value_decomposition(degrees, fourier_transform_size, cross_spectral_density)  # call spectral value decomposition function
+        cross_spectral_density, frequency = Grafico.power_spectral_density(degrees, fourier_transform_size, stream_file,delta)  # call power spectral density power function flame
+        eigen_values, eigen_vectors = Grafico.spectral_value_decomposition(degrees, fourier_transform_size, cross_spectral_density)  # call spectral value decomposition function
         return frequency, eigen_values
 
     def frequency_position(frequency_peaks, degrees, fourier_transform_size, stream_file, delta):

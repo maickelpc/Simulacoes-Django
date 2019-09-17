@@ -57,20 +57,27 @@
         {% endif %}
 
 {% comment %}       FORMULARIO DO GRAFICO         {% endcomment %}
-        {% if fourier_size %}       
+        {% if form %}       
         <div class="col-md-4" > 
-
+            {% if message %}
+                <p class="text-danger"> {{message}}</p>
+            {% endif %}
         <form action="/plotarGrafico/" method="POST">
         {% csrf_token %}
+        {{ form.as_p}}
+        
+            {% comment %}
             <div class="form-group">
                 <label>Channels</label>
                 <input name="canais" class="form-control" type="number" value="{{canais}}">
                 <label>Channels Analysis</label>
-                <input name="analise_canais" class="form-control" type="number" value="{{analise_canais}}">
+                <input name="analise_canais" class="form-control" type="number" value="{{form.analise_canais}}">
                 <label>Fourier Transform Size</label>
-                <input name="fourier_size" class="form-control" type="number" value="{{fourier_size}}">   
-                <input name="id" type="hidden" value="{{id}}">             
+                <input name="fourier_size" class="form-control" type="number" value="{{form.fourier_size}}">   
+                <input name="id" type="hidden" value="{{form.pk_arquivo}}">             
             </div>
+            {% endcomment %}
+            <input type="hidden" value="{{id}}" name="id">
             <input class="btn btn-success btn-lg" type="submit" value="Submeter Dados">
         </form>  
         </div>     

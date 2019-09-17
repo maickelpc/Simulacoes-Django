@@ -24,5 +24,5 @@ urlpatterns = [
     path('arquivo/',Arquivos.plot_dados,name="plotDados"),
     path('plotBruto/<int:pk>/',Arquivos.plotar_dados_brutos, name="plotBruto"),
     path('montarGrafico/<int:pk>/', Grafico.montar_grafico,name="montarGrafico"),
-    #path('plotarGrafico/',Grafico.plotar_grafico,name="plotarGrafico"),
+    path('plotarGrafico/',Grafico.plotar_grafico,name="plotarGrafico"),
 ]
