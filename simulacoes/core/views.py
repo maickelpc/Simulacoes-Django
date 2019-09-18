@@ -12,6 +12,7 @@ from pylab import *
 import io
 from .models import *
 from .forms import *
+import time
 
 class Basic(TemplateView):
 
@@ -62,6 +63,8 @@ class Grafico(TemplateView):
 
     def plotar_grafico(request):
         if request.method == 'POST':
+            start_time = time.time() # start time
+
             form = GraficoForm(request.POST)
             canais = int(request.POST['canais'])
             analise_canais = int(request.POST['analise_canais'])
@@ -84,7 +87,10 @@ class Grafico(TemplateView):
             #canvas = FigureCanvasAgg(fig)
             #canvas.print_png(buf)          
             fig.clear()        
-            return render(request,"base.html",{'form':form})
+            end_time = time.time() # end time
+            total_decorrido = (start_time - end_time)
+            print('\n',total_decorrido,'\n')
+            return render(request,"base.html",{'form':form,'time':total_decorrido,'id':id})
         else:
             form = GraficoForm
             return render(request,"base.html",{'form':form})
