@@ -62,9 +62,7 @@ class Arquivo(models.Model):
     def save(self, calcula=True , *args, **kwargs):
         novo = (self.id == None);
         super().save(*args, **kwargs)  # Call the "real" save() method.
-        # print(calcula)
-        id = self.id.__str__()
-
+        id = str(self.id)
         if calcula and not self.estatisticas and self.tipo == 'UEME':
             thread = threading.Thread(target=calculaMetodosEstatisticosUEME, args=(id))
             thread.start()
@@ -88,17 +86,23 @@ class ArquivoEstatisticas(models.Model):
     curtoses = models.FloatField(blank=True, null=True)
 
 
-def calculaMetodosEstatisticosUEME(idArquivo):
-
-    id = int(idArquivo)
+def calculaMetodosEstatisticosUEME(*args, **kwargs):
+    print("#################################################################################")
+    print("####################### INICIANDO CALCULOS DO ARQUIVO ###########################")
+    print("#################################################################################")
+    
+    s = ""
+    for c in args:
+        s += c
+    
+    id = int(s)
+    print(id)
+ 
     inicio = datetime.now()
     arquivo = Arquivo.objects.filter(pk=id).get()
     arquivo.estatistica_observacoes += '\nIniciando método de cálculos estatísticos em:' + inicio.strftime("%d/%m/%Y, %H:%M:%S")
     arquivo.estatisticas = True;
     arquivo.save(False)
-    print("#################################################################################")
-    print("####################### INICIANDO CALCULOS DO ARQUIVO ###########################")
-    print("#################################################################################")
     try:
         with transaction.atomic():
             fileUpload = arquivo.documento

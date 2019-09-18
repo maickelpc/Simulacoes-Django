@@ -21,8 +21,8 @@ class AcelerometroAdmin(admin.ModelAdmin):
 
 class ArquivoAdmin(admin.ModelAdmin):
     search_fields = ['codigo','dataLeitura', 'estatisticas']
-    list_display = ['codigo','canais','dataLeitura','dataUpload','estatisticas']
-    list_display_links = ['codigo','canais','dataLeitura','dataUpload','estatisticas']
+    list_display = ['id','codigo','canais','dataLeitura','dataUpload','estatisticas']
+    list_display_links = ['id','codigo','canais','dataLeitura','dataUpload','estatisticas']
     ordering = ['dataUpload','codigo']
     autocomplete_fields = ['acelerometro']
     form = ArquivoForm
