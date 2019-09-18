@@ -57,6 +57,9 @@
         {% endif %}
 
 {% comment %}       FORMULARIO DO GRAFICO         {% endcomment %}
+        {% if time %}
+            <p>Total decorrido em segundos <strong class="text-success">{{time}}</strong></p>
+        {% endif %}
         {% if form %}       
         <div class="col-md-4" > 
             {% if message %}
@@ -78,10 +81,12 @@
             </div>
             {% endcomment %}
             <input type="hidden" value="{{id}}" name="id">
-            <input class="btn btn-success btn-lg" type="submit" value="Submeter Dados">
+            <input class="btn btn-success btn-lg" type="submit" value="Submit Data">
         </form>  
         </div>     
         {% endif %}
+    {% comment %}          {% endcomment %}
+    
     </div>
 </div>
 <body>
