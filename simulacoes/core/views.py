@@ -62,17 +62,20 @@ class Grafico(TemplateView):
 
     def plotar_grafico(request):
         if request.method == 'POST':
-            formulario = GraficoForm(request.POST)
+            form = GraficoForm(request.POST)
+            canais = int(request.POST['canais'])
+            analise_canais = int(request.POST['analise_canais'])
+            fourier_size = int(request.POST['fourier_size'])
             id = request.POST['id']
             arquivo = get_object_or_404(Arquivo, pk = id)
+
             arq = genfromtxt(arquivo.documento, delimiter=",")
-            
-            frequency, eigen_values = Grafico.system_frequency( )
+            frequency, eigen_values = Grafico.system_frequency(canais, fourier_size, arq, analise_canais)
             fig = plt.figure()
             ax = fig.add_subplot(111)
             ax.cla()
             ax.grid(True)
-            for i in range(0, dominio):
+            for i in range(0, canais):
                 ax.semilogy(frequency[i, i, :], eigen_values[:, i])  # 5 points tolerance
             ax.legend(loc='center', bbox_to_anchor=(0.8, 0.5))
             plt.show()
@@ -81,16 +84,15 @@ class Grafico(TemplateView):
             #canvas = FigureCanvasAgg(fig)
             #canvas.print_png(buf)          
             fig.clear()        
-            return render(request,"base.html",{'form':formulario})
+            return render(request,"base.html",{'form':form})
         else:
-            formulario = GraficoForm
-            return render(request,"base.html",{'form':formulario})
+            form = GraficoForm
+            return render(request,"base.html",{'form':form})
 
     def montar_formulario(pk):
         arquivo = Arquivo.objects.get(pk=pk)    
         documento = arquivo.documento 
         formulario = GraficoForm
-        formulario.pk_arquivo = pk
         formulario.canais = arquivo.canais
         formulario.analise_canais = 50
         formulario.fourier_size = 2048
@@ -111,8 +113,6 @@ class Grafico(TemplateView):
                 stream_file)  # acceleration receives the data from the reading file in a transposed way
         for i in range(0, degrees):  #
             for j in range(0, degrees):  #
-                print('laço', i, j, 'degrees', degrees)
-                print(acceleration[:, i].shape)
                 cross_spectral_density[:][i, j], frequency[:][i, j] = mlab.csd(
                     # applying welch in matrix padding: cross spectral density and frequency
                     acceleration[:, i],
