@@ -40,22 +40,11 @@ class Arquivos(TemplateView):
     def plotar_dados_brutos(request,pk):
         arquivo = Arquivo.objects.get(pk = pk)
         nome = arquivo.codigo
-        arquivo = arquivo.documento.readlines()
-        plot_list = []
-        item = []
-        for linha in arquivo:
-            linha = str(linha)
-            linha = linha.replace("'","")
-            linha = linha.replace("b","")
-            linha = linha.replace("\n","")
-            linha = linha.replace("\r","")
-            valores = linha.split(',')
-            for valor in valores:
-                item.append(valor)
-            aux = item.copy()
-            plot_list.append(aux)
-            item.clear()
-        return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
+        try:
+            plot_list = arquivo.trata_conteudo_documento()
+            return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
+        except: 
+            return render(request,"base.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome})
 
 class Grafico(TemplateView):
 
