@@ -13,6 +13,8 @@ import io
 from .models import *
 from .forms import *
 import time
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+import urllib, base64
 
 class Basic(TemplateView):
 
@@ -74,23 +76,25 @@ class Grafico(TemplateView):
 
             arq = genfromtxt(arquivo.documento, delimiter=",")
             frequency, eigen_values = Grafico.system_frequency(canais, fourier_size, arq, analise_canais)
-            fig = plt.figure()
+            fig = plt.figure(figsize=(20, 10), dpi=100)
             ax = fig.add_subplot(111)
             ax.cla()
             ax.grid(True)
             for i in range(0, canais):
                 ax.semilogy(frequency[i, i, :], eigen_values[:, i])  # 5 points tolerance
             ax.legend(loc='center', bbox_to_anchor=(0.8, 0.5))
-            plt.show()
+            fig = plt.gcf()
             # armazenar imagem do plot em um buffer
-            #buf = io.BytesIO()
-            #canvas = FigureCanvasAgg(fig)
-            #canvas.print_png(buf)          
-            fig.clear()        
+            buf = io.BytesIO()
+            fig.savefig(buf, format='png')
+            buf.seek(0)
+            string = base64.b64encode(buf.read())
+            uri = 'data:image/png;base64,' + urllib.parse.quote(string)
+            html = '<img src = "%s"/>' % uri
+            
             end_time = time.time() # end time
             total_decorrido = (start_time - end_time)
-            print('\n',total_decorrido,'\n')
-            return render(request,"base.html",{'form':form,'time':total_decorrido,'id':id})
+            return render(request,"base.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri})
         else:
             form = GraficoForm
             return render(request,"base.html",{'form':form})
