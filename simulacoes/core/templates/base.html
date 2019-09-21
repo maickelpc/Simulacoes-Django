@@ -2,6 +2,9 @@
 {% block content %}
  <!doctype html>
 <html>
+<head>
+ 
+</head>
 <body>
 <div class="container">
     <div class="row">    
@@ -61,29 +64,22 @@
             <p>Total decorrido em segundos <strong class="text-success">{{time}}</strong></p>
         {% endif %}
         {% if form %}       
-        <div class="col-md-4" > 
+        <div class="col-sm-4"> 
             {% if message %}
                 <p class="text-danger"> {{message}}</p>
             {% endif %}
         <form action="/plotarGrafico/" method="POST">
         {% csrf_token %}
         {{ form.as_p}}
-        
-            {% comment %}
-            <div class="form-group">
-                <label>Channels</label>
-                <input name="canais" class="form-control" type="number" value="{{canais}}">
-                <label>Channels Analysis</label>
-                <input name="analise_canais" class="form-control" type="number" value="{{form.analise_canais}}">
-                <label>Fourier Transform Size</label>
-                <input name="fourier_size" class="form-control" type="number" value="{{form.fourier_size}}">   
-                <input name="id" type="hidden" value="{{form.pk_arquivo}}">             
-            </div>
-            {% endcomment %}
             <input type="hidden" value="{{id}}" name="id">
-            <input class="btn btn-success btn-lg" type="submit" value="Submit Data">
+            <input class="btn btn-success" type="submit" value="Submit Data">
         </form>  
         </div>     
+        {% endif %}
+        {% if response %}
+        <div class="col-sm-3">
+           <img src="{{uri}}" width="600px" height="400px">
+        </div>
         {% endif %}
     {% comment %}          {% endcomment %}
     

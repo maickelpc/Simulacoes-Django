@@ -66,7 +66,50 @@ class Arquivo(models.Model):
         if calcula and not self.estatisticas and self.tipo == 'UEME':
             thread = threading.Thread(target=calculaMetodosEstatisticosUEME, args=(id))
             thread.start()
-    
+
+    def trata_conteudo_documento(self):
+        documento = self.documento
+        if self.tipo == 'UEME':
+            arrayCanais = []
+            for i in range(self.canais):
+                canal = []
+                arrayCanais.append(canal)
+
+            for linha in documento:
+                aux = str(linha)
+                aux = aux.rstrip().lstrip()
+                aux = aux.replace("b'", "")
+                aux = aux.replace("\\r\\n'", "")
+                dados = aux.split("\\t")
+                dados.pop()
+                canal = 1;
+
+                for n in dados:
+                    valor = float(n)
+                    arrayCanais[canal-1].append(valor)
+                    canal += 1
+
+                    if (canal > self.canais):
+                        canal = 1
+            return arrayCanais
+        else:
+            arquivo = documento.readlines()
+            plot_list = []
+            item = []
+            for linha in arquivo:
+                linha = str(linha)
+                linha = linha.replace("'","")
+                linha = linha.replace("b","")
+                linha = linha.replace("\\n","")
+                linha = linha.replace("\\r","")
+                valores = linha.split(',')
+                for valor in valores:
+                    item.append(valor)
+                aux = item.copy()
+                plot_list.append(aux)
+                item.clear()
+            return plot_list
+
     def plot_dados_brutos(self):
         print(self.documento[10])
 
