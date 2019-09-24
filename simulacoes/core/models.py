@@ -69,29 +69,27 @@ class Arquivo(models.Model):
 
     def trata_conteudo_documento(self):
         documento = self.documento
+        domain = 3
         if self.tipo == 'UEME':
-            arrayCanais = []
-            for i in range(self.canais):
-                canal = []
-                arrayCanais.append(canal)
-
-            for linha in documento:
-                aux = str(linha)
-                aux = aux.rstrip().lstrip()
-                aux = aux.replace("b'", "")
-                aux = aux.replace("\\r\\n'", "")
-                dados = aux.split("\\t")
-                dados.pop()
-                canal = 1;
-
-                for n in dados:
-                    valor = float(n)
-                    arrayCanais[canal-1].append(valor)
-                    canal += 1
-
-                    if (canal > self.canais):
-                        canal = 1
-            return arrayCanais
+            file_content_by_domain = []
+            time = []
+            file = documento.readlines()
+            for i in range(0,domain):
+                file_content_by_domain.append('')
+                file_content_by_domain[i] = []   
+            for line in file:
+                elements = line.split()
+                time.append(elements[0])
+                file_content_by_domain[0].append(elements[1])
+                file_content_by_domain[0].append(elements[2])
+                file_content_by_domain[0].append(elements[3])
+                file_content_by_domain[1].append(elements[4])
+                file_content_by_domain[1].append(elements[5])
+                file_content_by_domain[1].append(elements[6])
+                file_content_by_domain[2].append(elements[7])
+                file_content_by_domain[2].append(elements[8])
+                file_content_by_domain[2].append(elements[9])
+            return list(file_content_by_domain)
         else:
             arquivo = documento.readlines()
             plot_list = []

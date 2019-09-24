@@ -61,26 +61,34 @@
 
 {% comment %}       FORMULARIO DO GRAFICO         {% endcomment %}
         {% if time %}
-            <p>Total decorrido em segundos <strong class="text-success">{{time}}</strong></p>
+            <p>Processing time: <strong class="text-success">{{time}}</strong> seconds</p>
         {% endif %}
-        {% if form %}       
-        <div class="col-sm-4"> 
-            {% if message %}
-                <p class="text-danger"> {{message}}</p>
-            {% endif %}
-        <form action="/plotarGrafico/" method="POST">
-        {% csrf_token %}
-        {{ form.as_p}}
-            <input type="hidden" value="{{id}}" name="id">
-            <input class="btn btn-success" type="submit" value="Submit Data">
-        </form>  
-        </div>     
+        {% if form %}
+            <div class="col-sm-4"> 
+                <table>
+                    <tr>
+                        <td>
+                            {% if message %}
+                                <p class="text-danger"> {{message}}</p>
+                            {% endif %}
+                            <form action="/plotarGrafico/" method="POST">
+                                {% csrf_token %}
+                                {{ form.as_p  }}
+                                <input type="hidden" value="{{id}}" name="id">
+                                <input class="btn btn-success btn-block" type="submit" value="Submit Data">
+                            </form>  
+                        </td>
+                        <td></td>
+                        <td>
+                        {% if response %}
+                            <img src="{{uri}}" width="600px" height="400px">
+                        {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>     
         {% endif %}
-        {% if response %}
-        <div class="col-sm-3">
-           <img src="{{uri}}" width="600px" height="400px">
-        </div>
-        {% endif %}
+      
     {% comment %}          {% endcomment %}
     
     </div>

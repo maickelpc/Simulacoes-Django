@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 from matplotlib import pylab
 from pylab import *
 import io
+from io import StringIO
 from .models import *
 from .forms import *
 import time
@@ -33,18 +34,20 @@ class Arquivos(TemplateView):
 
     def plot_dados(request):
         arquivo = Arquivo.objects.get(pk=1)
-        print(arquivo)
-        print(type(arquivo))
         return render(request,"arquivos_list.html",{'arq':arquivo.documento})
 
     def plotar_dados_brutos(request,pk):
         arquivo = Arquivo.objects.get(pk = pk)
         nome = arquivo.codigo
         try:
-            plot_list = arquivo.trata_conteudo_documento()
-            return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
+            if arquivo.tipo == 'UEME':
+                plot_list = arquivo.trata_conteudo_documento()
+                return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
+            else:
+                plot_list = arquivo.trata_conteudo_documento()
+                return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
         except: 
-            return render(request,"base.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome})
+            return render(request,"base.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome,'id':pk})
 
 class Grafico(TemplateView):
 
@@ -55,15 +58,20 @@ class Grafico(TemplateView):
     def plotar_grafico(request):
         if request.method == 'POST':
             start_time = time.time() # start time
-
             form = GraficoForm(request.POST)
             canais = int(request.POST['canais'])
             analise_canais = int(request.POST['analise_canais'])
             fourier_size = int(request.POST['fourier_size'])
             id = request.POST['id']
             arquivo = get_object_or_404(Arquivo, pk = id)
-
-            arq = genfromtxt(arquivo.documento, delimiter=",")
+            if arquivo.tipo == "UEME":
+                try:
+                    arq = arquivo.trata_conteudo_documento()
+                    arq = np.array(arq,dtype='float64')
+                except:
+                    return render(request,"base.html",{'form':form,'message':'O documento selecionado não pode ser processado...','id':id})
+            else:
+                arq = genfromtxt(arquivo.documento, delimiter=",")
             frequency, eigen_values = Grafico.system_frequency(canais, fourier_size, arq, analise_canais)
             fig = plt.figure(figsize=(20, 10), dpi=100)
             ax = fig.add_subplot(111)
@@ -73,6 +81,7 @@ class Grafico(TemplateView):
                 ax.semilogy(frequency[i, i, :], eigen_values[:, i])  # 5 points tolerance
             ax.legend(loc='center', bbox_to_anchor=(0.8, 0.5))
             fig = plt.gcf()
+
             # armazenar imagem do plot em um buffer
             buf = io.BytesIO()
             fig.savefig(buf, format='png')
@@ -82,7 +91,9 @@ class Grafico(TemplateView):
             html = '<img src = "%s"/>' % uri
             
             end_time = time.time() # end time
-            total_decorrido = (start_time - end_time)
+            total_decorrido = str(round((start_time - end_time),2))
+            total_decorrido = total_decorrido.replace('-','')
+
             return render(request,"base.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri})
         else:
             form = GraficoForm
@@ -99,17 +110,20 @@ class Grafico(TemplateView):
         
     def power_spectral_density(degrees, fourier_transform_size, stream_file, delta):
         print(" power_spectral_density operante...")
-        cross_spectral_density = np.zeros((degrees, degrees, int((fourier_transform_size / 2) + 1)),
-                                          dtype=complex)  # Store the data 01 by means of a three-dimensional matrix 5 * 5 * 1025
-        frequency = np.zeros((degrees, degrees, int((fourier_transform_size / 2) + 1)),
-                             dtype=complex)  # build the matrix...
-        n = stream_file.shape  # dimensions of stream file lines x columns
-        stream_file = stream_file[1:]
-        if n[0] > n[1]:
-            acceleration = stream_file  # acceleration receives the data from the read file
-        else:
-            acceleration = np.transpose(
-                stream_file)  # acceleration receives the data from the reading file in a transposed way
+        cross_spectral_density = np.zeros((degrees, degrees, int((fourier_transform_size / 2) + 1)),dtype=complex)  # Store the data 01 by means of a three-dimensional matrix 5 * 5 * 1025
+        frequency = np.zeros((degrees, degrees, int((fourier_transform_size / 2) + 1)),dtype=complex)  # build the matrix...
+        try:
+            n = stream_file.shape  # dimensions of stream file lines x columns
+            if n[0] > n[1]:
+                acceleration = stream_file  # acceleration receives the data from the read file
+            else:
+                acceleration = np.transpose(stream_file)  # acceleration receives the data from the reading file in a transposed way
+        except:
+            n = (len(stream_file),len(stream_file[0]))  # dimensions of stream file lines x columns
+            if n[0] > n[1]:
+                acceleration = stream_file  # acceleration receives the data from the read file
+            else:
+                acceleration = np.transpose(stream_file)  # acceleration receives the data from the reading file in a transposed way
         for i in range(0, degrees):  #
             for j in range(0, degrees):  #
                 cross_spectral_density[:][i, j], frequency[:][i, j] = mlab.csd(
