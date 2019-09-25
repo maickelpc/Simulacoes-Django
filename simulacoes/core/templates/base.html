@@ -8,6 +8,9 @@
 <body>
 <div class="container">
     <div class="row">    
+    {% if message %}
+        <p class="text-danger">Attention {{message}}</p>
+    {% endif %}
 {% comment %}       LISTAGEM ARQUIVOS       {% endcomment %}
         {% if arq %}
         <div class="col-md-4" > 
@@ -39,27 +42,58 @@
 {% comment %}       PlOT BRUTO DOS DADOS          {% endcomment %}
 
         {% if plot_list %}
-        <div class="col-md-4" style="overflow:scroll; max-height: 500px;"> 
-            <table class="table table-hover table-striped" style="overflow:scroll; max-height:500px;">
-                <thead class="thead-dark">
-                    <tr>
-                        <th class="text-info display-4"><center>Archiev {{ codigo }}<center></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for linha in plot_list %}
+            <div class="col-md-4" > 
+                <table class="table table-hover table-striped" style="overflow:scroll; max-height:500px;">
+                    <thead class="thead-dark">
                         <tr>
-                            {% for valor in linha %}
-                                <td class=""> {{ valor }}</td>
-                            {% endfor %}
-                        <tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                            <th class="text-info display-4"><center>Archiev {{ codigo }}<center></th>
+                        </tr>
+                    </thead>
+                    <tbody style="overflow:scroll; max-height: 600px;">
+                        {% for linha in plot_list %}
+                            <tr>
+                                {% for valor in linha %}
+                                    <td class=""> {{ valor }}</td>
+                                {% endfor %}
+                            <tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {#                  Paginação                   #}
+            <div class="pagination" align="center">
+                <span class="step-links">
+                    <ul class="pagination pagination-lg">
+
+                        {% if plot_list.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">firts</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ plot_list.previous_page_number }}">previous</a>                       
+                            </li>
+                        {% endif %}
+
+                            <li class="page-item">
+                                <a class="page-link" href="">Page {{ plot_list.number }} of {{ plot_list.paginator.num_pages }}.</a>                       
+                            </li>
+                        
+                        {% if plot_list.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ plot_list.next_page_number }}">next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ plot_list.paginator.num_pages }}">last &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+  
+                </span>
+            </div>
         {% endif %}
 
 {% comment %}       FORMULARIO DO GRAFICO         {% endcomment %}
+
         {% if time %}
             <p>Processing time: <strong class="text-success">{{time}}</strong> seconds</p>
         {% endif %}
@@ -68,9 +102,6 @@
                 <table>
                     <tr>
                         <td>
-                            {% if message %}
-                                <p class="text-danger"> {{message}}</p>
-                            {% endif %}
                             <form action="/plotarGrafico/" method="POST">
                                 {% csrf_token %}
                                 {{ form.as_p  }}

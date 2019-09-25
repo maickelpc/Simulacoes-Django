@@ -1,8 +1,8 @@
-from django.shortcuts import render
 from django.views.generic import ListView
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404, render
+from django.core.paginator import Paginator
 import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
@@ -10,11 +10,10 @@ from matplotlib.figure import Figure
 from matplotlib import pylab
 from pylab import *
 import io
-from io import StringIO
 from .models import *
 from .forms import *
 import time
-from matplotlib.backends.backend_agg import FigureCanvasAgg
+#from matplotlib.backends.backend_agg import FigureCanvasAgg
 import urllib, base64
 
 class Basic(TemplateView):
@@ -41,10 +40,16 @@ class Arquivos(TemplateView):
         nome = arquivo.codigo
         try:
             if arquivo.tipo == 'UEME':
-                plot_list = arquivo.trata_conteudo_documento()
+                full_plot_list = arquivo.trata_conteudo_documento()
+                paginator = Paginator(full_plot_list,100)
+                page = request.GET.get('page')
+                plot_list = paginator.get_page(page)
                 return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
             else:
-                plot_list = arquivo.trata_conteudo_documento()
+                full_plot_list = arquivo.trata_conteudo_documento()
+                paginator = Paginator(full_plot_list,100)
+                page = request.GET.get('page')
+                plot_list = paginator.get_page(page)
                 return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
         except: 
             return render(request,"base.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome,'id':pk})
@@ -82,7 +87,7 @@ class Grafico(TemplateView):
             ax.legend(loc='center', bbox_to_anchor=(0.8, 0.5))
             fig = plt.gcf()
 
-            # armazenar imagem do plot em um buffer
+            # armazenar imagem do plot em Bytes
             buf = io.BytesIO()
             fig.savefig(buf, format='png')
             buf.seek(0)
