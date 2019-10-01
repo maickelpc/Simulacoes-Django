@@ -4,16 +4,13 @@ from datetime import timedelta
 from django.db.models import StdDev, Avg, Variance
 from scipy.stats import kurtosis
 import numpy as np
-
-
-
 from django.db import transaction
-
 import threading
 import time
 
 
 # Create your models here.
+
 class Acelerometro(models.Model):
     id = models.AutoField(primary_key=True)
     codigo = models.CharField(max_length=100, unique=True, verbose_name='Code')
@@ -115,6 +112,15 @@ class Arquivo(models.Model):
         verbose_name = "File"
         verbose_name_plural = 'Files'
 
+class GraphResults(models.Model):
+    archiev = models.ForeignKey(Arquivo, on_delete = models.PROTECT)
+    fourier_size = models.IntegerField()
+    channels = models.IntegerField()
+    channels_analysis = models.IntegerField()
+    graph = models.ImageField(upload_to = "graph_images", blank = False,default = "media/img.png")
+
+    def __str__(self):
+        return "graph results"
 
 class ArquivoEstatisticas(models.Model):
     id = models.AutoField(primary_key=True)
@@ -125,7 +131,6 @@ class ArquivoEstatisticas(models.Model):
     desvio = models.FloatField(blank=True, null=True, verbose_name="Standard deviation")
     variancia = models.FloatField(blank=True, null=True, verbose_name="variance")
     curtoses = models.FloatField(blank=True, null=True, verbose_name="Kurtosis")
-
 
 def calculaMetodosEstatisticosUEME(*args, **kwargs):
     print("#################################################################################")

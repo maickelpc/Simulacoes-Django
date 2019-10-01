@@ -3,7 +3,7 @@
  <!doctype html>
 <html>
 <head>
- 
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
 <div class="container">
@@ -39,6 +39,7 @@
             </table>
         </div>
         {% endif %} 
+
 {% comment %}       PlOT BRUTO DOS DADOS          {% endcomment %}
 
         {% if plot_list %}
@@ -92,14 +93,24 @@
             </div>
         {% endif %}
 
-{% comment %}       FORMULARIO DO GRAFICO         {% endcomment %}
+{% comment %}       FORMULARIO DO GRAFICO  E APRESENTAÇÃO       {% endcomment %}
 
-        {% if time %}
-            <p>Processing time: <strong class="text-success">{{time}}</strong> seconds</p>
-        {% endif %}
+        
         {% if form %}
             <div class="col-sm-4"> 
                 <table>
+                    <tr>
+                        {% if time %}
+                            <td>
+                                <p>Processing time: <strong class="text-success">{{time}}</strong> seconds</p>
+                            </td>
+                        {% endif %}
+                        {% if save_status %}
+                        <td>
+                            <p class="text-warning">{{save_status}}<p>
+                        </td>
+                        {% endif %}
+                    </tr>
                     <tr>
                         <td>
                             <form action="/plotarGrafico/" method="POST">
@@ -109,12 +120,18 @@
                                 <input class="btn btn-success btn-block" type="submit" value="Submit Data">
                             </form>  
                         </td>
-                        <td></td>
                         <td>
-                        {% if response %}
-                            <img src="{{uri}}" width="600px" height="400px">
-                        {% endif %}
+                            {% if response %}
+                                <div class="zoom">
+                                    <img style="margin: 10px" src="{{uri}}" width="600px" height="350px">
+                                </div>
+                            {% endif %}
                         </td>
+                    </tr>
+                    <tr>
+                        {% if response %}
+                            <td><a href="/relatory/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-secondary" >view relatory</a></td>
+                        {% endif %}
                     </tr>
                 </table>
             </div>     

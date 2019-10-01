@@ -1,8 +1,9 @@
 from django.views.generic import ListView
-from django.http import HttpResponse
+from django.http import HttpResponse,FileResponse
 from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404, render
 from django.core.paginator import Paginator
+import datetime
 import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ import io
 from .models import *
 from .forms import *
 import time
+from reportlab.pdfgen import canvas
 #from matplotlib.backends.backend_agg import FigureCanvasAgg
 import urllib, base64
 
@@ -34,7 +36,7 @@ class Arquivos(TemplateView):
     def plot_dados(request):
         arquivo = Arquivo.objects.get(pk=1)
         return render(request,"arquivos_list.html",{'arq':arquivo.documento})
-
+    
     def plotar_dados_brutos(request,pk):
         arquivo = Arquivo.objects.get(pk = pk)
         nome = arquivo.codigo
@@ -55,6 +57,33 @@ class Arquivos(TemplateView):
             return render(request,"base.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome,'id':pk})
 
 class Grafico(TemplateView):
+    def graph_relatory(request,time,channels,channels_analysis,code,fourier_size,status):
+        try:
+            # Create a file-like buffer to receive PDF data.
+            buffer = io.BytesIO()
+            # Create the PDF object, using the buffer as its "file."
+            p = canvas.Canvas(buffer)
+            # Draw things on the PDF. Here's where the PDF generation happens.
+            # See the ReportLab documentation for the full list of functionality.
+            x = datetime.now()
+            x = x.strftime("%x %X")
+            p.drawString(200,800,"RELATORY")
+            p.drawString(300,800,"%s" %x)
+            p.drawString(20,750,"Fourier Transform size: %s" %fourier_size)
+            p.drawString(20,735,"Channels: %s" %channels)
+            p.drawString(20,720,"Channels Analysis: %s" %channels_analysis)
+            p.drawString(20,705,"Used Archiev: %s" %code)
+            p.drawString(20,690,"Total Process Time: %s Seconds" %time)
+            p.drawString(20,675,"Save Status: %s" %status)
+            # Close the PDF object cleanly, and we're done.
+            p.showPage()
+            p.save()
+            # FileResponse sets the Content-Disposition header so that browsers
+            # present the option to save the file.
+            buffer.seek(0)
+            return FileResponse(buffer, as_attachment=True, filename='relatory.pdf')
+        except:
+            return HttpResponse("Error at write the pdf relatory document...")
 
     def montar_grafico(request,pk):
         form = Grafico.montar_formulario(pk)
@@ -64,10 +93,8 @@ class Grafico(TemplateView):
         if request.method == 'POST':
             start_time = time.time() # start time
             form = GraficoForm(request.POST)
-            canais = int(request.POST['canais'])
-            analise_canais = int(request.POST['analise_canais'])
-            fourier_size = int(request.POST['fourier_size'])
-            id = request.POST['id']
+            canais,analise_canais,fourier_size,id= int(request.POST['canais']), int(request.POST['analise_canais']),int(request.POST['fourier_size']),request.POST['id']
+            dic = {'channels':canais,'channels_analysis':analise_canais,'fourier_size':fourier_size,'id':id}
             arquivo = get_object_or_404(Arquivo, pk = id)
             if arquivo.tipo == "UEME":
                 try:
@@ -86,23 +113,30 @@ class Grafico(TemplateView):
                 ax.semilogy(frequency[i, i, :], eigen_values[:, i])  # 5 points tolerance
             ax.legend(loc='center', bbox_to_anchor=(0.8, 0.5))
             fig = plt.gcf()
-
             # armazenar imagem do plot em Bytes
             buf = io.BytesIO()
             fig.savefig(buf, format='png')
             buf.seek(0)
-            string = base64.b64encode(buf.read())
+            string = base64.b64encode(buf.read())       
             uri = 'data:image/png;base64,' + urllib.parse.quote(string)
             html = '<img src = "%s"/>' % uri
-            
             end_time = time.time() # end time
             total_decorrido = str(round((start_time - end_time),2))
             total_decorrido = total_decorrido.replace('-','')
-
-            return render(request,"base.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri})
+            plt.savefig('media\img.png')
+            save_status = Grafico.save_graph_data(dic)
+            return render(request,"base.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status})
         else:
             form = GraficoForm
             return render(request,"base.html",{'form':form})
+
+    def save_graph_data(dic):
+        try:
+            object = GraphResults(archiev=Arquivo.objects.get(pk = dic['id']), channels=dic['channels'], channels_analysis=dic['channels_analysis'], fourier_size=dic['fourier_size'])
+            object.save()
+            return 'chart data successfully saved'
+        except:
+            return 'unsaved chart datas'
 
     def montar_formulario(pk):
         arquivo = Arquivo.objects.get(pk=pk)    

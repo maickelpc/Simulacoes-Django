@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import  Acelerometro,Arquivo, ArquivoEstatisticas
+from .models import  *
 from .forms import ArquivoForm
 
 # Register your models here.
@@ -31,3 +31,4 @@ class ArquivoAdmin(admin.ModelAdmin):
 
 admin.site.register(Acelerometro, AcelerometroAdmin)
 admin.site.register(Arquivo, ArquivoAdmin)
+admin.site.register(GraphResults)
