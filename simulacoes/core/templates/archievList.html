@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %} {% block content %}
+<!doctype html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            {% if message %}
+            <p class="text-danger">Attention {{message}}</p>
+            {% endif %} {% if arq %}
+            <div class="col-md-4">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Code</th>
+                            <th>Date</th>
+                            <th>Archiev</th>
+                            <th>Channels</th>
+                            <th class="text-sucess">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for arquivo in arq %}
+                        <tr>
+                            <td><a href="/plotBruto/{{arquivo.id}}/">{{arquivo.codigo}}</a></td>
+                            <td>{{arquivo.dataLeitura}}</td>
+                            <td>{{arquivo.documento}}</td>
+                            <td>{{arquivo.canais}}</td>
+                            <td><a class="btn btn-primary" href="/montarGrafico/{{arquivo.id}}/">Build Graphic</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>
+{% endblock %}

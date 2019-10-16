@@ -18,25 +18,13 @@ from reportlab.pdfgen import canvas
 #from matplotlib.backends.backend_agg import FigureCanvasAgg
 import urllib, base64
 
-class Basic(TemplateView):
-
-    def home(request):
-        return render(request,"principal.html")
-
-    def teste(request):
-        return render(request,'teste.html')
-
 class Arquivos(TemplateView):
     arquivos = Arquivo.objects.all()
 
     def listar_arquivos(request):
         arquivos = Arquivo.objects.all()
-        return render(request,"base.html",{'arq':arquivos})
+        return render(request,"archievList.html",{'arq':arquivos})
 
-    def plot_dados(request):
-        arquivo = Arquivo.objects.get(pk=1)
-        return render(request,"arquivos_list.html",{'arq':arquivo.documento})
-    
     def plotar_dados_brutos(request,pk):
         arquivo = Arquivo.objects.get(pk = pk)
         nome = arquivo.codigo
@@ -54,7 +42,7 @@ class Arquivos(TemplateView):
                 plot_list = paginator.get_page(page)
                 return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
         except: 
-            return render(request,"base.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome,'id':pk})
+            return render(request,"plot.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome,'id':pk})
 
 class Grafico(TemplateView):
     def graph_relatory(request,time,channels,channels_analysis,code,fourier_size,status):
@@ -65,8 +53,8 @@ class Grafico(TemplateView):
             p = canvas.Canvas(buffer)
             # Draw things on the PDF. Here's where the PDF generation happens.
             # See the ReportLab documentation for the full list of functionality.
-            x = datetime.now()
-            x = x.strftime("%x %X")
+            
+            x = datetime.now().strftime("%x %X")
             p.drawString(200,800,"RELATORY")
             p.drawString(300,800,"%s" %x)
             p.drawString(20,750,"Fourier Transform size: %s" %fourier_size)
@@ -87,21 +75,22 @@ class Grafico(TemplateView):
 
     def montar_grafico(request,pk):
         form = Grafico.montar_formulario(pk)
-        return render(request,"base.html",{'form':form,'id':pk})
+        return render(request,"form.html",{'form':form,'id':pk})
 
     def plotar_grafico(request):
         if request.method == 'POST':
             start_time = time.time() # start time
             form = GraficoForm(request.POST)
-            canais,analise_canais,fourier_size,id= int(request.POST['canais']), int(request.POST['analise_canais']),int(request.POST['fourier_size']),request.POST['id']
-            dic = {'channels':canais,'channels_analysis':analise_canais,'fourier_size':fourier_size,'id':id}
+            canais,analise_canais,fourier_size,id = int(request.POST['canais']), int(request.POST['analise_canais']),int(request.POST['fourier_size']),request.POST['id']
+            x ="media/graph_images/"+ datetime.now().strftime("%Y_%m_%d_%Hh_%Mm_%Ss") + ".png"
+            dic = {'channels':canais,'channels_analysis':analise_canais,'fourier_size':fourier_size,'id':id,'name': x}
             arquivo = get_object_or_404(Arquivo, pk = id)
             if arquivo.tipo == "UEME":
                 try:
                     arq = arquivo.trata_conteudo_documento()
                     arq = np.array(arq,dtype='float64')
                 except:
-                    return render(request,"base.html",{'form':form,'message':'O documento selecionado não pode ser processado...','id':id})
+                    return render(request,"archievList.html",{'form':form,'message':'O documento selecionado não pode ser processado...','id':id})
             else:
                 arq = genfromtxt(arquivo.documento, delimiter=",")
             frequency, eigen_values = Grafico.system_frequency(canais, fourier_size, arq, analise_canais)
@@ -123,16 +112,20 @@ class Grafico(TemplateView):
             end_time = time.time() # end time
             total_decorrido = str(round((start_time - end_time),2))
             total_decorrido = total_decorrido.replace('-','')
-            plt.savefig('media\img.png')
+            try:
+                plt.savefig(x,format='png')
+            except: 
+                save_status = "unsaved chart datas, error at save graph image..."
+                return render(request,"form.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status})
             save_status = Grafico.save_graph_data(dic)
-            return render(request,"base.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status})
+            return render(request,"response.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status})
         else:
             form = GraficoForm
-            return render(request,"base.html",{'form':form})
+            return render(request,"form.html",{'form':form,'message':'Error in process'})
 
     def save_graph_data(dic):
         try:
-            object = GraphResults(archiev=Arquivo.objects.get(pk = dic['id']), channels=dic['channels'], channels_analysis=dic['channels_analysis'], fourier_size=dic['fourier_size'])
+            object = GraphResults(archiev=Arquivo.objects.get(pk = dic['id']), channels=dic['channels'], channels_analysis=dic['channels_analysis'], fourier_size=dic['fourier_size'],graph=dic['name'])
             object.save()
             return 'chart data successfully saved'
         except:

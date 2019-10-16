@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %} {% block content %}
+<!doctype html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            {% if message %}
+            <p class="text-danger">Attention {{message}}</p>
+            {% endif %}
+            <div class="col-sm-4">
+                <table class="table table-condensed table-hover">
+                    <tr>
+                        <td>
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a data-toggle="tab" href="#graph_data">Graph Datas</a></li>
+                                <li><a data-toggle="tab" href="#form">Form</a></li>
+                                <li><a data-toggle="tab" href="#relatoryes">Relatoryes</a></li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div id="graph_data" class="tab-pane fade in active">
+                                    <h3>Graph Datas</h3>
+                                    {% if time %}
+                                    <p> Processing time: <strong class="text-success">{{time}}</strong> seconds</p>
+                                    {% endif %} {% if save_status %}
+                                    <p class="text-warning">{{save_status}}</p>
+                                    {% endif %}
+                                    <p>Archive id: <strong>{{id}}</strong></p>
+                                    <p>Fourier Transform Size: <strong>{{form.fourier_size.value}}</strong></p>
+                                    <p>Channels: <strong>{{form.canais.value}}</strong></p>
+                                    <p>Channels Analysis: <strong>{{form.analise_canais.value}}</strong></p>
+                                </div>
+                                <div id="form" class="tab-pane fade">
+                                    <h3>Graph Form</h3>
+                                    <br>
+                                    <form action="/plotarGrafico/" method="POST">
+                                        {% csrf_token %} {{ form.as_p }}
+                                        <input type="hidden" value="{{id}}" name="id">
+                                        <br>
+                                        <input class="btn btn-success btn-block" type="submit" value="Submit Data">
+                                    </form>
+                                    <br>
+                                </div>
+                                <div id="relatoryes" class="tab-pane fade">
+                                    <h3>Relatoryes</h3>
+                                    {% if response %}
+                                    <a href="/relatory/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">PDF relatory</a> {% else %}
+                                    <p class="text-info"> no reports available</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if response %}
+                            <div class="zoom">
+                                <img style="margin: 10px" src="{{uri}}" width="600px" height="350px">
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            {% comment %} {% endcomment %}
+
+        </div>
+    </div>
+
+
+    <footer>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    </footer>
+</body>
+
+</html>
+{% endblock %}

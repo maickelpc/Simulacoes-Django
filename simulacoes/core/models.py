@@ -117,7 +117,7 @@ class GraphResults(models.Model):
     fourier_size = models.IntegerField()
     channels = models.IntegerField()
     channels_analysis = models.IntegerField()
-    graph = models.ImageField(upload_to = "graph_images", blank = False,default = "media/img.png")
+    graph = models.ImageField(upload_to = "graph_images/", blank = False)
 
     def __str__(self):
         return "graph results"
