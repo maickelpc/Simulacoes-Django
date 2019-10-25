@@ -48,7 +48,8 @@
                                 <div id="relatoryes" class="tab-pane fade">
                                     <h3>Relatoryes</h3>
                                     {% if response %}
-                                    <a href="/relatory/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">PDF relatory</a> {% else %}
+                                    <a href="/relatory/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">PDF relatory</a> 
+                                    <a href="/relatory_csv/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">CSV relatory</a> {% else %}
                                     <p class="text-info"> no reports available</p>
                                     {% endif %}
                                 </div>

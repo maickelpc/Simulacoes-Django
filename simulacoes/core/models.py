@@ -104,6 +104,28 @@ class Arquivo(models.Model):
                 plot_list.append(aux)
                 item.clear()
             return plot_list
+            
+    def agrupa_canais(self,plot_list):
+        channels = []
+        aux = str(plot_list[1])
+        aux = aux.replace('[','')
+        aux = aux.replace(']','')
+        aux = aux.split(',')
+        size = len(aux)
+        for i in range(0,size):
+            channels.append('')
+            channels[i] = []
+            channels[i].append(str(i))
+        for line in plot_list:
+            line = str(line)
+            line = line.replace('[','')
+            line = line.replace(']','')
+            line = line.replace("'",'')
+            line = line.replace("/'",'')
+            line_elements = line.split(',')
+            for i in range(0,len(line_elements)):
+                channels[i].append(line_elements[i])
+        return channels
 
     def plot_dados_brutos(self):
         print(self.documento[10])

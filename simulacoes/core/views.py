@@ -15,6 +15,7 @@ from .models import *
 from .forms import *
 import time
 from reportlab.pdfgen import canvas
+import csv
 #from matplotlib.backends.backend_agg import FigureCanvasAgg
 import urllib, base64
 
@@ -45,6 +46,24 @@ class Arquivos(TemplateView):
             return render(request,"plot.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome,'id':pk})
 
 class Grafico(TemplateView):
+    
+
+    def graph_relatory_csv(request,time,channels,channels_analysis,code,fourier_size,status):
+        # Create the HttpResponse object with the appropriate CSV header.
+        x = datetime.now().strftime("%x %X")
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="%s.csv"'%x
+
+        writer = csv.writer(response)
+        writer.writerow(['RELATORY: %s'%x])
+        writer.writerow(['Fourier Transform size: %s'%fourier_size])
+        writer.writerow(['Channels: %s'%channels])
+        writer.writerow(['Channels Analysis: %s'%channels_analysis])
+        writer.writerow(['Used Archiev: %s'%code])
+        writer.writerow(['Total Process Time: %s'%time])
+        writer.writerow(['Save Status: %s'%status])
+        return response
+
     def graph_relatory(request,time,channels,channels_analysis,code,fourier_size,status):
         try:
             # Create a file-like buffer to receive PDF data.
@@ -74,8 +93,25 @@ class Grafico(TemplateView):
             return HttpResponse("Error at write the pdf relatory document...")
 
     def montar_grafico(request,pk):
-        form = Grafico.montar_formulario(pk)
-        return render(request,"form.html",{'form':form,'id':pk})
+        arquivo = Arquivo.objects.get(pk = pk)
+        form = GraficoForm()
+        form.canais = arquivo.canais
+        plot_list = arquivo.trata_conteudo_documento()
+        channels = arquivo.agrupa_canais(plot_list)
+        context = {
+            'id' : pk,
+            'form' : form,
+            'size_channels' : arquivo.canais,
+            'full_channels' : channels
+        }
+        cont = 0
+        aux = []
+        for channel in channels:
+            aux.append(str(cont))
+            context[cont] = channel
+            cont += 1
+        context['aux'] = aux
+        return render(request,"form.html",context)
 
     def plotar_grafico(request):
         if request.method == 'POST':
@@ -130,15 +166,6 @@ class Grafico(TemplateView):
             return 'chart data successfully saved'
         except:
             return 'unsaved chart datas'
-
-    def montar_formulario(pk):
-        arquivo = Arquivo.objects.get(pk=pk)    
-        documento = arquivo.documento 
-        formulario = GraficoForm
-        formulario.canais = arquivo.canais
-        formulario.analise_canais = 50
-        formulario.fourier_size = 2048
-        return formulario 
         
     def power_spectral_density(degrees, fourier_transform_size, stream_file, delta):
         print(" power_spectral_density operante...")
