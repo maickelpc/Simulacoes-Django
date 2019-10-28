@@ -37,7 +37,8 @@ class Arquivos(TemplateView):
                 plot_list = paginator.get_page(page)
                 return render(request,"base.html",{'plot_list':plot_list,'codigo':nome,'tipo':'UEME'})
             else:
-                full_plot_list = arquivo.trata_conteudo_documento()
+                #full_plot_list = arquivo.trata_conteudo_documento()
+                full_plot_list = arquivo.plot_bruto()
                 paginator = Paginator(full_plot_list,100)
                 page = request.GET.get('page')
                 plot_list = paginator.get_page(page)

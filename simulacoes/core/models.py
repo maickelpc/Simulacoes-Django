@@ -107,6 +107,26 @@ class Arquivo(models.Model):
                     print(elements[i])
         return final_list
            
+    def plot_bruto(self):
+            canais = self.canais
+            documento = self.documento
+            arquivo = documento.readlines()
+            plot_list = []
+            item = []
+            for linha in arquivo:
+                linha = str(linha)
+                linha = linha.replace("'","")
+                linha = linha.replace("b","")
+                linha = linha.replace("\\n","")
+                linha = linha.replace("\\r","")
+                valores = linha.split(',')
+                for valor in valores:
+                    item.append(valor)
+                aux = item.copy()
+                plot_list.append(aux)
+                item.clear()
+            return plot_list
+
     def plot_dados_brutos(self):
         print(self.documento[10])
 
