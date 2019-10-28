@@ -18,7 +18,7 @@
                             <ul class="nav nav-tabs">
                                 <li class="active"><a data-toggle="tab" href="#graph_data">Graph Datas</a></li>
                                 <li><a data-toggle="tab" href="#form">Form</a></li>
-                                <li><a data-toggle="tab" href="#relatoryes">Relatoryes</a></li>
+                                <li><a data-toggle="tab" href="#relatoryes">Report</a></li>
                             </ul>
 
                             <div class="tab-content">
@@ -46,10 +46,10 @@
                                     <br>
                                 </div>
                                 <div id="relatoryes" class="tab-pane fade">
-                                    <h3>Relatoryes</h3>
+                                    <h3>Reports</h3>
                                     {% if response %}
-                                    <a href="/relatory/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">PDF relatory</a> 
-                                    <a href="/relatory_csv/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">CSV relatory</a> {% else %}
+                                    <a href="/relatory/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">PDF report</a>
+                                    <a href="/relatory_csv/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">CSV report</a> {% else %}
                                     <p class="text-info"> no reports available</p>
                                     {% endif %}
                                 </div>

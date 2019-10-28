@@ -12,33 +12,31 @@
                 <thead></thead>
                 <tbody>
                     <tr>
-                    <form action="/plotarGrafico/" method="POST">
-                        <td>        
-                            {% if message %}
-                            <p class="text-danger">Attention {{message}}</p>
-                            {% endif %}
-                            <h3>Graph Form</h3>
-                            <br>
-                                {% csrf_token %} {{ form.as_p }}
+                        <form action="/plotarGrafico/" method="POST">
+                            <td>
+                                {% if message %}
+                                <p class="text-danger">Attention {{message}}</p>
+                                {% endif %}
+                                <h3>Graph Form</h3>
+                                <br> {% csrf_token %} {{ form.as_p }}
                                 <input type="hidden" value="{{id}}" name="id">
                                 <br>
                                 <input class="btn btn-success btn-block" type="submit" value="Submit Data">
-                        </td>
-                        <td>
-                        <div id="card" style="margin: 20px">
-                        <a style="float: right;" class="btn btn-danger btn-small" href="#" id="close" class="card-link" title="close">X</a>
-                            <h3 class="card-title text-info">Selection of Channels</h3>
-                            <p class="card-text">to select a channel, check a corresponding box.</p>
-                            {% for i in aux %} 
-                                <p>
-                                    <input class="form-check" type="checkbox" name="channel{{i}}" value="channel{{i}}">
-                                    Channel {{i}}
-                                </p> 
-                            {% endfor %}           
-                        </div>                                                                                           
-                        </td>
-                        
-                    </form>
+                            </td>
+                            <td>
+                                <div id="card" style="margin: 20px">
+                                    <a style="float: right;" class="btn btn-danger btn-small" href="#" id="close" class="card-link" title="close">X</a>
+                                    <h3 class="card-title text-info">Selection of Channels</h3>
+                                    <p class="card-text">to select a channel, check a corresponding box.</p>
+                                    {% for i in size_channels %}
+                                    <p>
+                                        <input class="form-check" type="checkbox" name="channel" value="{{i}}"> Channel {{i}}
+                                    </p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+
+                        </form>
                     </tr>
                 </tbody>
             </table>
@@ -47,11 +45,12 @@
     </div>
 </body>
 <script>
-$(document).ready(function(){
-    $("#close").click(function(){
-        $("#card").hide();
+    $(document).ready(function() {
+        $("#close").click(function() {
+            $("#card").hide();
+        });
     });
-});
 </script>
+
 </html>
 {% endblock %}

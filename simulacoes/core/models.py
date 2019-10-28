@@ -57,7 +57,7 @@ class Arquivo(models.Model):
         return self.codigo
 
     def save(self, calcula=True , *args, **kwargs):
-        novo = (self.id == None);
+        novo = (self.id == None)
         super().save(*args, **kwargs)  # Call the "real" save() method.
         id = str(self.id)
         if calcula and not self.estatisticas and self.tipo == 'UEME':
@@ -65,12 +65,12 @@ class Arquivo(models.Model):
             thread.start()
 
     def trata_conteudo_documento(self):
-        documento = self.documento
-        domain = 3
+        document = self.documento
+        domain = self.canais
         if self.tipo == 'UEME':
             file_content_by_domain = []
             time = []
-            file = documento.readlines()
+            file = document.readlines()
             for i in range(0,domain):
                 file_content_by_domain.append('')
                 file_content_by_domain[i] = []   
@@ -88,45 +88,25 @@ class Arquivo(models.Model):
                 file_content_by_domain[2].append(elements[9])
             return list(file_content_by_domain)
         else:
-            arquivo = documento.readlines()
-            plot_list = []
-            item = []
-            for linha in arquivo:
-                linha = str(linha)
-                linha = linha.replace("'","")
-                linha = linha.replace("b","")
-                linha = linha.replace("\\n","")
-                linha = linha.replace("\\r","")
-                valores = linha.split(',')
-                for valor in valores:
-                    item.append(valor)
-                aux = item.copy()
-                plot_list.append(aux)
-                item.clear()
-            return plot_list
-            
-    def agrupa_canais(self,plot_list):
-        channels = []
-        aux = str(plot_list[1])
-        aux = aux.replace('[','')
-        aux = aux.replace(']','')
-        aux = aux.split(',')
-        size = len(aux)
-        for i in range(0,size):
-            channels.append('')
-            channels[i] = []
-            channels[i].append(str(i))
-        for line in plot_list:
+            document = document.open()
+            final_list = []
+        for i in range(0,domain):
+            final_list.append([])
+        for line in document:
             line = str(line)
-            line = line.replace('[','')
-            line = line.replace(']','')
+            line = line.replace('\\n','')
+            line = line.replace('\\r','')
+            line = line.replace('b','')
             line = line.replace("'",'')
-            line = line.replace("/'",'')
-            line_elements = line.split(',')
-            for i in range(0,len(line_elements)):
-                channels[i].append(line_elements[i])
-        return channels
-
+            elements = line.split(',')
+            for i in range(0,len(elements)):
+                try:
+                    elements[i] = float(elements[i])
+                    final_list[i].append(elements[i])
+                except:
+                    print(elements[i])
+        return final_list
+           
     def plot_dados_brutos(self):
         print(self.documento[10])
 

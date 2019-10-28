@@ -35,13 +35,13 @@ class Arquivos(TemplateView):
                 paginator = Paginator(full_plot_list,100)
                 page = request.GET.get('page')
                 plot_list = paginator.get_page(page)
-                return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
+                return render(request,"base.html",{'plot_list':plot_list,'codigo':nome,'tipo':'UEME'})
             else:
                 full_plot_list = arquivo.trata_conteudo_documento()
                 paginator = Paginator(full_plot_list,100)
                 page = request.GET.get('page')
                 plot_list = paginator.get_page(page)
-                return render(request,"base.html",{'plot_list':plot_list,'codigo':nome})
+                return render(request,"base.html",{'plot_list':plot_list,'codigo':nome,'tipo':'COMPOSTO'})
         except: 
             return render(request,"plot.html",{'message':"Erro ao ler dados do arquivo, verifique se o formato é válido",'codigo':nome,'id':pk})
 
@@ -55,7 +55,7 @@ class Grafico(TemplateView):
         response['Content-Disposition'] = 'attachment; filename="%s.csv"'%x
 
         writer = csv.writer(response)
-        writer.writerow(['RELATORY: %s'%x])
+        writer.writerow(['Report: %s'%x])
         writer.writerow(['Fourier Transform size: %s'%fourier_size])
         writer.writerow(['Channels: %s'%channels])
         writer.writerow(['Channels Analysis: %s'%channels_analysis])
@@ -74,7 +74,7 @@ class Grafico(TemplateView):
             # See the ReportLab documentation for the full list of functionality.
             
             x = datetime.now().strftime("%x %X")
-            p.drawString(200,800,"RELATORY")
+            p.drawString(200,800,"Report")
             p.drawString(300,800,"%s" %x)
             p.drawString(20,750,"Fourier Transform size: %s" %fourier_size)
             p.drawString(20,735,"Channels: %s" %channels)
@@ -88,36 +88,32 @@ class Grafico(TemplateView):
             # FileResponse sets the Content-Disposition header so that browsers
             # present the option to save the file.
             buffer.seek(0)
-            return FileResponse(buffer, as_attachment=True, filename='relatory.pdf')
+            return FileResponse(buffer, as_attachment=True, filename='report.pdf')
         except:
-            return HttpResponse("Error at write the pdf relatory document...")
+            return HttpResponse("Error at write the pdf report document...")
 
     def montar_grafico(request,pk):
         arquivo = Arquivo.objects.get(pk = pk)
         form = GraficoForm()
         form.canais = arquivo.canais
         plot_list = arquivo.trata_conteudo_documento()
-        channels = arquivo.agrupa_canais(plot_list)
+        size_channels = []
+        for i in range(0,arquivo.canais):
+            size_channels.append(i)
         context = {
             'id' : pk,
             'form' : form,
-            'size_channels' : arquivo.canais,
-            'full_channels' : channels
+            'size_channels' : size_channels,
         }
-        cont = 0
-        aux = []
-        for channel in channels:
-            aux.append(str(cont))
-            context[cont] = channel
-            cont += 1
-        context['aux'] = aux
         return render(request,"form.html",context)
 
     def plotar_grafico(request):
         if request.method == 'POST':
+            
             start_time = time.time() # start time
             form = GraficoForm(request.POST)
             canais,analise_canais,fourier_size,id = int(request.POST['canais']), int(request.POST['analise_canais']),int(request.POST['fourier_size']),request.POST['id']
+            channels = request.POST.getlist('channel') # importante detalhe!!!
             x ="media/graph_images/"+ datetime.now().strftime("%Y_%m_%d_%Hh_%Mm_%Ss") + ".png"
             dic = {'channels':canais,'channels_analysis':analise_canais,'fourier_size':fourier_size,'id':id,'name': x}
             arquivo = get_object_or_404(Arquivo, pk = id)
@@ -125,10 +121,20 @@ class Grafico(TemplateView):
                 try:
                     arq = arquivo.trata_conteudo_documento()
                     arq = np.array(arq,dtype='float64')
+                    print(arq)
+                    print('\n',len(arq),'\n')
                 except:
                     return render(request,"archievList.html",{'form':form,'message':'O documento selecionado não pode ser processado...','id':id})
             else:
-                arq = genfromtxt(arquivo.documento, delimiter=",")
+                arq = arquivo.trata_conteudo_documento()
+                arq_filtered = []
+                size = len(channels)
+                for index in channels:
+                    index = int(index)
+                    arq_filtered.append(arq[index])
+                arq = np.array(arq_filtered,dtype='float64')
+                canais = size
+                #arq = genfromtxt(arquivo.documento, delimiter=",")# Padrão, este refere-se ao original; deve ser mantido em caso de falha
             frequency, eigen_values = Grafico.system_frequency(canais, fourier_size, arq, analise_canais)
             fig = plt.figure(figsize=(20, 10), dpi=100)
             ax = fig.add_subplot(111)
