@@ -3,11 +3,30 @@
 <html>
 
 <head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        #info_btn{
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 26px;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
         <div class="row">
+            <button id="info_btn" class="btn btn-info"><i class="fa fa-question"></i></button>
+            <br>
+
+            <div id="info_card" class="alert alert-info" style="display: none;">
+                <a style="float: right;" class="btn btn-danger btn-small" href="#" id="close" class="card-link" title="close">X</a>
+                <p>This is the conclusion of the chart production step, for more information browse the tabs available in the table below.</p>
+            </div>
+            <br>
             {% if message %}
             <p class="text-danger">Attention {{message}}</p>
             {% endif %}
@@ -31,7 +50,7 @@
                                     {% endif %}
                                     <p>Archive id: <strong>{{id}}</strong></p>
                                     <p>Fourier Transform Size: <strong>{{form.fourier_size.value}}</strong></p>
-                                    <p>Channels: <strong>{{form.canais.value}}</strong></p>
+                                    <p>Used Channels: <strong>{{ channels }}</strong></p>
                                     <p>Channels Analysis: <strong>{{form.analise_canais.value}}</strong></p>
                                 </div>
                                 <div id="form" class="tab-pane fade">
@@ -39,7 +58,12 @@
                                     <br>
                                     <form action="/plotarGrafico/" method="POST">
                                         {% csrf_token %} {{ form.as_p }}
-                                        <input type="hidden" value="{{id}}" name="id">
+                                        <input type="hidden" value="{{id}}" name="id"> 
+                                        {% for channel in size_channels %}
+                                        <p>
+                                            <input class="form-check" type="checkbox" name="channel" value="{{channel}}" checked> Channel {{channel}}
+                                        </p>
+                                        {% endfor %}
                                         <br>
                                         <input class="btn btn-success btn-block" type="submit" value="Submit Data">
                                     </form>
@@ -48,8 +72,8 @@
                                 <div id="relatoryes" class="tab-pane fade">
                                     <h3>Reports</h3>
                                     {% if response %}
-                                    <a href="/relatory/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">PDF report</a>
-                                    <a href="/relatory_csv/{{time}}/{{form.canais.value}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">CSV report</a> {% else %}
+                                    <a href="/relatory/{{time}}/{{channels}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">PDF report</a>
+                                    <a href="/relatory_csv/{{time}}/{{channels}}/{{form.analise_canais.value}}/{{id}}/{{form.fourier_size.value}}/{{save_status}}/" class="btn btn-info">CSV report</a> {% else %}
                                     <p class="text-info"> no reports available</p>
                                     {% endif %}
                                 </div>
@@ -75,6 +99,16 @@
     <footer>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+        <script>
+        $(document).ready(function() {
+            $("#close").click(function() {
+                $("#info_card").hide();
+            });
+            $("#info_btn").click(function() {
+                $("#info_card").toggle();
+            });
+        });
+    </script>
     </footer>
 </body>
 

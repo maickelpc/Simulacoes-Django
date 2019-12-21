@@ -3,11 +3,30 @@
 <html>
 
 <head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        #info {
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 26px;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
         <div class="row">
+        <button id="info_btn" class="btn btn-info"><i class="fa fa-question"></i></button>
+            <br>
+
+            <div id="info_card" class="alert alert-info" style="display: none;">
+                <a style="float: right;" class="btn btn-danger btn-small" href="#" id="close" class="card-link" title="close">X</a>
+                <p>If desired, enter the values ​​for <strong>Fourier Transform size</strong> and <strong>Channels Analysis</strong>, then select the desired channels for production..</p>
+            </div>
+            <br>
             <table class="table table-condensed table-hover">
                 <thead></thead>
                 <tbody>
@@ -21,11 +40,10 @@
                                 <br> {% csrf_token %} {{ form.as_p }}
                                 <input type="hidden" value="{{id}}" name="id">
                                 <br>
-                                <input class="btn btn-success btn-block" type="submit" value="Submit Data">
+                                <input class="btn btn-success" type="submit" value="            Apply            ">                               
                             </td>
                             <td>
                                 <div id="card" style="margin: 20px">
-                                    <a style="float: right;" class="btn btn-danger btn-small" href="#" id="close" class="card-link" title="close">X</a>
                                     <h3 class="card-title text-info">Selection of Channels</h3>
                                     <p class="card-text">to select a channel, check a corresponding box.</p>
                                     {% for i in size_channels %}
@@ -47,7 +65,11 @@
 <script>
     $(document).ready(function() {
         $("#close").click(function() {
-            $("#card").hide();
+            $("#info_card").hide();
+        });
+
+        $("#info_btn").click(function() {
+            $("#info_card").toggle();
         });
     });
 </script>

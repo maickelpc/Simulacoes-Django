@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %} {% block content %} {% load static %}
+<!doctype html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            {% for item in list %}
+            <div class="col-sm-4">
+                <div class="well" style="width: 300px;">
+                    <table>
+                        <tr>
+                            <td>
+
+                            </td>
+                            <td>
+                                <div>
+                                    <p><span class="text-info">Archiev:</span> {{item.archiev}}</p>
+                                    <p><span class="text-info">Collection Date:</span> {{item.collection_date}}</p>
+                                    <p><span class="text-info">Production Date:</span> {{item.date}}</p>
+                                    <p><span class="text-info">Time:</span> {{item.time}}</p>
+                                    <p><span class="text-info">Channels:</span> {{item.channels}}</p>
+                                    <p><span class="text-info">Channels Analysis:</span> {{item.channels_analysis}}</p>
+                                    <p><span class="text-info">Fourier Size:</span> {{item.fourier_size}}</p>
+                                    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal{{item.id}}">Open Image</button>
+                                </div>
+                            </td>
+
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="modal fade" id="myModal{{item.id}}" role="dialog">
+                    <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title"></h4>
+                            </div>
+                            <div class="modal-body">
+                                <p><img class="img-rounded img-responsive" src="{{item.graph.url}}"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <footer>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    </footer>
+</body>
+
+</html>
+{% endblock %}

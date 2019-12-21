@@ -135,14 +135,18 @@ class Arquivo(models.Model):
         verbose_name_plural = 'Files'
 
 class GraphResults(models.Model):
+    
     archiev = models.ForeignKey(Arquivo, on_delete = models.PROTECT)
     fourier_size = models.IntegerField()
-    channels = models.IntegerField()
+    channels = models.CharField(max_length = 30,name="channels")
     channels_analysis = models.IntegerField()
-    graph = models.ImageField(upload_to = "graph_images/", blank = False)
+    graph = models.ImageField(upload_to = "graph_images", blank = False)
+    date = models.DateTimeField(null = True)
+    collection_date = models.DateTimeField(null = True)
+    time = models.DecimalField("TOTAL PROCESS TIME",null = True, max_digits = 10, decimal_places = 2)
 
     def __str__(self):
-        return "graph results"
+        return "graph result"
 
 class ArquivoEstatisticas(models.Model):
     id = models.AutoField(primary_key=True)

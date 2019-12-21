@@ -1,0 +1,211 @@
+{% extends "admin/base.html" %} {% block content %}
+<!doctype html>
+<html>
+
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        #info {
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 26px;
+        }
+
+        .hide{
+            display: none;
+        }
+    </style>
+    
+</head>
+
+<body>
+    <div class="container" id="conteudo_01">
+        <div class="row">
+            <a href="/graphics_records/" class="btn btn-info btn-small">graphics records</a>
+
+            <button id="info_btn" class="btn btn-info"><i class="fa fa-question"></i></button>
+            <br>
+
+            <div id="info_card" class="alert alert-info" style="display: none;">
+            <a style="float: right;" class="btn btn-danger btn-small" href="#" id="close" class="card-link" title="close">X</a>
+                <p>To perform the comparison, filter the data as desired then <strong>select the two files</strong> you want to compare, the necessary data will be available in the description of them.</p>
+            </div>
+            <br> 
+            {% if message %}
+                <p class="text-danger">Attention {{message}}</p>
+            {% endif %} 
+            {% if list %}
+            <div class="col-md-4">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th colspan="3" class="text-info"><h2><center>Select the file you want to compare your data</center></h2></th>
+                        </tr>
+                        <tr>
+                            <th>Archiev</th>
+                            <th>Date</th>
+                            <th class="text-sucess">Action</th>
+                        </tr>
+                        <tr>
+                            <th colspan="5"> 
+                            <p class="text-info"><strong>  Filter Data  </strong> <input class="form-control input-large" id="find_input" type="text" placeholder="Search.."> </p>   
+                            
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="list_table">
+
+                        {% for item in list %}
+                        <tr class="elements" id="{{item.id}}">
+                            <td id="codigo{{item.id}}">{{item.archiev.codigo}}</td>
+                            <td id="date{{item.id}}">{{item.date}}</td>
+                            <td id="collection_date{{item.id}}" class="hide">{{item.collection_date}}</td>
+                            <td id="time{{item.id}}" class="hide">{{item.time}}</td>
+                            <td id="channels{{item.id}}" class="hide">{{item.channels}}</td>
+                            <td id="channels_analysis{{item.id}}" class="hide">{{item.channels_analysis}}</td>
+                            <td id="fourier_size{{item.id}}" class="hide">{{item.fourier_size}}</td>
+                            <td><input type="checkbox" class="checkbox"> Select this.</input></td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container" id="conteudo_02" style="display: none;">
+        <div class="row"> 
+            <table class="table table-condensed table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th colspan="3"><center><spam class="text-info">COMPARISON OF RESULTS</spam></center></th>
+                    </tr>
+                    <tr>
+                        <th><center></center></th>
+                        <th><center>First data</center></th>
+                        <th><center>Second data</center></th>
+                    </tr>             
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CODE</td>
+                        <td id="codigo01"></td>
+                        <td id="codigo02"></td>
+                    </tr>
+                    <tr>
+                        <td>PRODUCTION DATE</td>
+                        <td id="date01"></td>
+                        <td id="date02"></td>
+                    </tr>
+                    <tr>
+                        <td>COLLECTION DATE</td>
+                        <td id="collection_date01"></td>
+                        <td id="collection_date02"></td>
+                    </tr>
+                    <tr>
+                        <td>TOTAL TIME</td>
+                        <td id="time01"></td>
+                        <td id="time02"></td>
+                    </tr>
+                    <tr>
+                        <td>CHANNELS</td>
+                        <td id="channels01"></td>
+                        <td id="channels02"></td>
+                    </tr>
+                    <tr>
+                        <td>CHANNELS ANALYSIS</td>
+                        <td id="channels_analysis01"></td>
+                        <td id="channels_analysis02"></td>
+                    </tr>
+                    <tr>
+                        <td>FOURIER SIZE</td>
+                        <td id="fourier_size01"></td>                                                                            
+                        <td id="fourier_size02"></td>
+                    </tr>                                                                               
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+<footer>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+       
+        $(document).ready(function() {
+             var selecionados = []
+            $(".elements").click(function(){
+                selecionados.push( $(this).attr("id") );
+                if(selecionados.length == 2){
+                    $("#conteudo_01").hide();
+                    $("#conteudo_02").show();
+                    var id01 = selecionados[0];
+                    var id02 = selecionados[1];
+                    var re01 = {id: id01, codigo: "", date: "", collection_date: "", time: "", channels: "", channels_analysis: "", fourier_size: ""};
+                    var re02 = {id: id02, codigo: "", date: "", collection_date: "", time: "", channels: "", channels_analysis: "", fourier_size: ""};
+                    
+                    re01.codigo = $("#codigo"+id01).text();
+                    re01.date = $("#date"+id01).text();
+                    re01.collection_date = $("#collection_date"+id01).text();
+                    re01.time = $("#time"+id01).text();
+                    re01.channels = $("#channels"+id01).text();
+                    re01.channels_analysis = $("#channels_analysis"+id01).text();
+                    re01.fourier_size = $("#fourier_size"+id01).text();
+
+                    alert(id01);
+                    alert($("#codigo"+id01).text());
+                    
+                    re02.codigo = $("#codigo"+id02).text();
+                    re02.date = $("#date"+id02).text();
+                    re02.collection_date = $("#collection_date"+id02).text();
+                    re02.time = $("#time"+id02).text();
+                    re02.channels = $("#channels"+id02).text();
+                    re02.channels_analysis = $("#channels_analysis"+id02).text();
+                    re02.fourier_size = $("#fourier_size"+id02).text();
+
+                    $("#codigo01").text(re01.codigo);
+                    $("#date01").text(re01.date);
+                    $("#collection_date01").text(re01.collection_date);
+                    $("#time01").text(re01.time);
+                    $("#channels01").text(re01.channels);
+                    $("#channels_analysis01").text(re01.channels_analysis);
+                    $("#fourier_size01").text(re01.fourier_size);
+
+                    $("#codigo02").text(re02.codigo);
+                    $("#date02").text(re02.date);
+                    $("#collection_date02").text(re02.collection_date);
+                    $("#time02").text(re02.time);
+                    $("#channels02").text(re02.channels);
+                    $("#channels_analysis02").text(re02.channels_analysis);
+                    $("#fourier_size02").text(re02.fourier_size);
+
+                    selecionados = []
+                }
+            });
+            $("#close").click(function() {
+                $("#info_card").hide();
+            });
+
+            $("#info_btn").click(function() {
+                $("#info_card").toggle();
+            });
+
+            //$('[data-toggle="tooltip"]').tooltip();
+            
+            $("#find_input").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#list_table tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+        });
+    </script>
+</footer>
+
+</html>
+{% endblock %}

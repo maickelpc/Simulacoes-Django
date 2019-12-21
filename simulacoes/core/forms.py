@@ -13,6 +13,5 @@ class ArquivoForm(ModelForm):
         fields = ('__all__')
 
 class GraficoForm(forms.Form):
-    canais = forms.IntegerField(label="Number of channels")
     analise_canais = forms.IntegerField(label="Channels analysis",initial=50)
     fourier_size = forms.IntegerField(label="Fourier transform size",initial=2048)

@@ -26,6 +26,10 @@ class Arquivos(TemplateView):
         arquivos = Arquivo.objects.all()
         return render(request,"archievList.html",{'arq':arquivos})
 
+    def list_archievs_to_compare(request):
+        arquivos = Arquivo.objects.all()
+        return render(request,"comparative_data.html",{'arq':arquivos})
+
     def plotar_dados_brutos(request,pk):
         arquivo = Arquivo.objects.get(pk = pk)
         nome = arquivo.codigo
@@ -48,21 +52,50 @@ class Arquivos(TemplateView):
 
 class Grafico(TemplateView):
     
-
+    def graphics_records(request):
+        context = {
+            'list' : GraphResults.objects.all()
+        }
+        return render(request,'graphics_records.html',context)
+    
     def graph_relatory_csv(request,time,channels,channels_analysis,code,fourier_size,status):
         # Create the HttpResponse object with the appropriate CSV header.
+        arquivo = Arquivo.objects.get(pk = code)
+        acelerometro = arquivo.acelerometro
         x = datetime.now().strftime("%x %X")
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="%s.csv"'%x
 
         writer = csv.writer(response)
-        writer.writerow(['Report: %s'%x])
+        writer.writerow(['\tReport: %s'%x])
+        writer.writerow([])
         writer.writerow(['Fourier Transform size: %s'%fourier_size])
         writer.writerow(['Channels: %s'%channels])
         writer.writerow(['Channels Analysis: %s'%channels_analysis])
-        writer.writerow(['Used Archiev: %s'%code])
         writer.writerow(['Total Process Time: %s'%time])
         writer.writerow(['Save Status: %s'%status])
+        writer.writerow([])
+        writer.writerow(['\tArchiev Data'])
+        writer.writerow([])
+        writer.writerow(['id: %s'%arquivo.id])
+        writer.writerow(['code: %s'%arquivo.codigo])
+        writer.writerow(['number of channels: %s'%arquivo.canais])
+        writer.writerow(['collection date: %s'%arquivo.dataLeitura])
+        writer.writerow(['frequency: %s'%arquivo.frequencia])
+        writer.writerow(['type: %s'%arquivo.tipo])
+        writer.writerow(['statistics: %s'%arquivo.estatisticas])
+        writer.writerow(['statistical observations: %s'%arquivo.estatistica_observacoes])
+        writer.writerow(['upload date: %s'%arquivo.dataUpload])
+        writer.writerow([])
+        writer.writerow(['\tAccelerometer Data'])
+        writer.writerow([])
+        writer.writerow(['id: %s'%acelerometro.id])
+        writer.writerow(['code: %s'%acelerometro.codigo])
+        writer.writerow(['description: %s'%acelerometro.descricao])
+        writer.writerow(['axe X: %s'%acelerometro.eixoX])
+        writer.writerow(['axe Y: %s'%acelerometro.eixoX])
+        writer.writerow(['axe Z: %s'%acelerometro.eixoX])
+
         return response
 
     def graph_relatory(request,time,channels,channels_analysis,code,fourier_size,status):
@@ -73,16 +106,37 @@ class Grafico(TemplateView):
             p = canvas.Canvas(buffer)
             # Draw things on the PDF. Here's where the PDF generation happens.
             # See the ReportLab documentation for the full list of functionality.
-            
+            arquivo = Arquivo.objects.get(pk = code)
+            acelerometro = arquivo.acelerometro
+
             x = datetime.now().strftime("%x %X")
             p.drawString(200,800,"Report")
             p.drawString(300,800,"%s" %x)
             p.drawString(20,750,"Fourier Transform size: %s" %fourier_size)
             p.drawString(20,735,"Channels: %s" %channels)
             p.drawString(20,720,"Channels Analysis: %s" %channels_analysis)
-            p.drawString(20,705,"Used Archiev: %s" %code)
             p.drawString(20,690,"Total Process Time: %s Seconds" %time)
             p.drawString(20,675,"Save Status: %s" %status)
+
+            p.drawString(200,660,"Archiev Data")
+            p.drawString(20,645,"id: %s"%arquivo.id)
+            p.drawString(20,630,"code: %s"%arquivo.codigo)
+            p.drawString(20,615,"number of channels: %s"%arquivo.canais)
+            p.drawString(20,600,"collection date: %s"%arquivo.dataLeitura)
+            p.drawString(20,585,"frequency: %s"%arquivo.frequencia)
+            p.drawString(20,570,"type: %s"%arquivo.tipo)
+            p.drawString(20,555,"statistics: %s"%arquivo.estatisticas)
+            p.drawString(20,540,"statistical observations: %s"%arquivo.estatistica_observacoes)
+            p.drawString(20,525,"upload date: %s"%arquivo.dataUpload)
+
+            p.drawString(200,500,"Accelerometer Data")
+
+            p.drawString(20,475,"id: %s"%acelerometro.id)
+            p.drawString(20,460,"code: %s"%acelerometro.codigo)
+            p.drawString(20,445,"description: %s"%acelerometro.descricao)
+            p.drawString(20,430,"axe X: %s"%acelerometro.eixoX)
+            p.drawString(20,415,"axe Y: %s"%acelerometro.eixoX)
+            p.drawString(20,400,"axe Z: %s"%acelerometro.eixoX)
             # Close the PDF object cleanly, and we're done.
             p.showPage()
             p.save()
@@ -96,7 +150,6 @@ class Grafico(TemplateView):
     def montar_grafico(request,pk):
         arquivo = Arquivo.objects.get(pk = pk)
         form = GraficoForm()
-        form.canais = arquivo.canais
         plot_list = arquivo.trata_conteudo_documento()
         size_channels = []
         for i in range(0,arquivo.canais):
@@ -108,22 +161,35 @@ class Grafico(TemplateView):
         }
         return render(request,"form.html",context)
 
+    def select_archiev_to_compare_data(request, pk):
+        context = {
+            'list': GraphResults.objects.filter(archiev = pk)
+        }
+        test = GraphResults.objects.filter(archiev = pk)
+        return render(request,'compare_graph_data.html',context)
+
     def plotar_grafico(request):
         if request.method == 'POST':
             
             start_time = time.time() # start time
             form = GraficoForm(request.POST)
-            canais,analise_canais,fourier_size,id = int(request.POST['canais']), int(request.POST['analise_canais']),int(request.POST['fourier_size']),request.POST['id']
+            analise_canais,fourier_size,id = int(request.POST['analise_canais']),int(request.POST['fourier_size']),request.POST['id']
             channels = request.POST.getlist('channel') # importante detalhe!!!
+            #x ="media/graph_images/"+ datetime.now().strftime("%Y_%m_%d_%Hh_%Mm_%Ss") + ".png" # salva imagem com a data atual
             x ="media/graph_images/"+ datetime.now().strftime("%Y_%m_%d_%Hh_%Mm_%Ss") + ".png"
-            dic = {'channels':canais,'channels_analysis':analise_canais,'fourier_size':fourier_size,'id':id,'name': x}
+            dic = {
+                'channels' : channels,
+                'channels_analysis' : analise_canais,
+                'fourier_size' : fourier_size,
+                'id' : id,
+                'name' : x.replace('media/','')
+                }
             arquivo = get_object_or_404(Arquivo, pk = id)
             if arquivo.tipo == "UEME":
                 try:
                     arq = arquivo.trata_conteudo_documento()
                     arq = np.array(arq,dtype='float64')
-                    print(arq)
-                    print('\n',len(arq),'\n')
+                    canais = len(channels)
                 except:
                     return render(request,"archievList.html",{'form':form,'message':'O documento selecionado não pode ser processado...','id':id})
             else:
@@ -136,6 +202,9 @@ class Grafico(TemplateView):
                 arq = np.array(arq_filtered,dtype='float64')
                 canais = size
                 #arq = genfromtxt(arquivo.documento, delimiter=",")# Padrão, este refere-se ao original; deve ser mantido em caso de falha
+            size_channels = []
+            for i in range(0,arquivo.canais):
+                size_channels.append(i)
             frequency, eigen_values = Grafico.system_frequency(canais, fourier_size, arq, analise_canais)
             fig = plt.figure(figsize=(20, 10), dpi=100)
             ax = fig.add_subplot(111)
@@ -155,20 +224,24 @@ class Grafico(TemplateView):
             end_time = time.time() # end time
             total_decorrido = str(round((start_time - end_time),2))
             total_decorrido = total_decorrido.replace('-','')
+
+            dic['date'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            dic['time'] = total_decorrido
+            print(dic['date'])
             try:
                 plt.savefig(x,format='png')
             except: 
                 save_status = "unsaved chart datas, error at save graph image..."
-                return render(request,"form.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status})
+                return render(request,"form.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status,'channels':channels,'size_channels':size_channels})
             save_status = Grafico.save_graph_data(dic)
-            return render(request,"response.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status})
+            return render(request,"response.html",{'form':form,'time':total_decorrido,'id':id,'response':html,'uri':uri,'save_status':save_status,'channels':channels,'size_channels':size_channels})
         else:
             form = GraficoForm
             return render(request,"form.html",{'form':form,'message':'Error in process'})
 
     def save_graph_data(dic):
         try:
-            object = GraphResults(archiev=Arquivo.objects.get(pk = dic['id']), channels=dic['channels'], channels_analysis=dic['channels_analysis'], fourier_size=dic['fourier_size'],graph=dic['name'])
+            object = GraphResults(archiev=Arquivo.objects.get(pk = dic['id']), channels=dic['channels'], channels_analysis=dic['channels_analysis'], fourier_size=dic['fourier_size'],graph=dic['name'],date=dic['date'], time=dic['time'], collection_date=Arquivo.objects.get(pk = dic['id']).dataLeitura)
             object.save()
             return 'chart data successfully saved'
         except:
